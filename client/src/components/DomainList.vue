@@ -47,8 +47,7 @@
 </template>
 
 <script>
-import "bootstrap/dist/css/bootstrap.css";
-import "font-awesome/css/font-awesome.css";
+import axios from "axios/dist/axios";
 import AppItemList from "./AppItemList";
 
 export default {
@@ -56,22 +55,94 @@ export default {
   components: { AppItemList },
   data() {
     return {
-      prefixes: ["Air", "Jet", "Flight"],
-      sufixes: ["Hub", "Station", "Mart"]
+      prefixes: [],
+      sufixes: []
     };
   },
   methods: {
     addPrefix(prefix) {
-      this.prefixes.push(prefix);
+      axios({
+        url: "http://localhost:4000",
+        method: "post",
+        data: {
+          query: `
+                mutation ($item: ItemInput) {
+                    newPrefix: saveItem(item: $item){
+                        id
+                        type
+                        description
+                    }
+                }
+            `,
+          variables: {
+            item: {
+              type: "prefix",
+              description: prefix
+            }
+          }
+        }
+      }).then(response => {
+        const query = responde.data;
+        const newPrefix = query.data.newPrefix;
+        this.prefixes.push(newPrefix.description);
+      });
     },
     addSufix(sufix) {
       this.sufixes.push(sufix);
     },
     deletePrefix(prefix) {
-      this.prefixes.splice(this.prefixes.indexOf(prefix), 1);
+	axios({
+		url: "http://localhost:4000",
+		method: "post",
+		data: {
+			query: `
+				mutation{
+					deleteItem
+				}
+			`
+		}
+		}).then();
     },
     deleteSufix(sufix) {
       this.sufixes.splice(this.sufixes.indexOf(sufix), 1);
+    },
+    getPrefixes() {
+      axios({
+        url: "http://localhost:4000",
+        method: "post",
+        data: {
+          query: `
+					{
+						prefixes: items (type: "prefix") {
+						id
+						type
+						description
+						}
+					}
+				`
+        }
+      }).then(response => {
+        const query = response.data;
+        this.prefixes = query.data.prefixes;
+      });
+    },
+    getSuffixes() {
+      axios({
+        url: "http://localhost:4000",
+        method: "post",
+        data: {
+          query: `
+					{
+						sufixes: items (type: "sufix") {
+							description
+						}
+					}
+				`
+        }
+      }).then(response => {
+        const query = response.data;
+        this.sufixes = query.data.sufixes;
+      });
     }
   },
   computed: {
@@ -79,11 +150,15 @@ export default {
       const domains = [];
       for (const prefix of this.prefixes) {
         for (const sufix of this.sufixes) {
-          domains.push(prefix + sufix);
+          domains.push(prefix.description + sufix.description);
         }
       }
       return domains;
     }
+  },
+  created() {
+    this.getPrefixes();
+    this.getSuffixes();
   }
 };
 </script>
