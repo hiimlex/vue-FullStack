@@ -9,7 +9,7 @@
     </div>
 
     <div id="main">
-      <DomainList></DomainList>
+      <router-view></router-view>
     </div>
   </div>
 </template>
@@ -17,11 +17,9 @@
 <script>
 import "bootstrap/dist/css/bootstrap.css";
 import "font-awesome/css/font-awesome.css";
-import DomainList from "./components/DomainList";
 
 export default {
-  name: "app",
-  components: { DomainList }
+  name: "app"
 };
 </script>
 
